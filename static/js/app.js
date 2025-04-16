@@ -34,6 +34,8 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentAnalysis = '';
     // Current audio URL
     let currentAudioUrl = '';
+    // Current story ID
+    let currentStoryId = null;
     
     // ===== File handling =====
     
@@ -154,11 +156,20 @@ document.addEventListener('DOMContentLoaded', function() {
                 // Store current story and analysis
                 currentStory = data.story;
                 currentAnalysis = data.imageAnalysis;
+                currentStoryId = data.storyId;
                 
                 // Display the results
                 storyContent.innerHTML = formatStoryText(data.story);
                 analysisContent.textContent = data.imageAnalysis;
                 storyContainer.classList.remove('d-none');
+                
+                // Add a link to view the saved story
+                const viewStoryLink = document.createElement('div');
+                viewStoryLink.className = 'mt-3 text-center';
+                viewStoryLink.innerHTML = `<a href="/stories/${currentStoryId}" class="btn btn-sm btn-outline-info" target="_blank">
+                    <i class="fas fa-external-link-alt me-2"></i>View Saved Story
+                </a>`;
+                storyContent.appendChild(viewStoryLink);
             } else {
                 showError(data.error || 'An error occurred while generating the story');
             }
@@ -194,10 +205,19 @@ document.addEventListener('DOMContentLoaded', function() {
             if (data.success) {
                 // Update current story
                 currentStory = data.story;
+                currentStoryId = data.storyId;
                 
                 // Display the results
                 storyContent.innerHTML = formatStoryText(data.story);
                 storyContainer.classList.remove('d-none');
+                
+                // Add a link to view the saved story
+                const viewStoryLink = document.createElement('div');
+                viewStoryLink.className = 'mt-3 text-center';
+                viewStoryLink.innerHTML = `<a href="/stories/${currentStoryId}" class="btn btn-sm btn-outline-info" target="_blank">
+                    <i class="fas fa-external-link-alt me-2"></i>View Saved Story
+                </a>`;
+                storyContent.appendChild(viewStoryLink);
             } else {
                 showError(data.error || 'An error occurred while regenerating the story');
             }
@@ -252,6 +272,7 @@ document.addEventListener('DOMContentLoaded', function() {
             audioPlayer.src = '';
         }
         currentAudioUrl = '';
+        currentStoryId = null;
     }
     
     // ===== Download and Copy Functions =====
@@ -317,7 +338,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                text: currentStory
+                text: currentStory,
+                storyId: currentStoryId
             })
         })
         .then(response => response.json())
