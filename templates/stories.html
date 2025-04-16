@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="{{ language }}" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>
+        {% if language == 'zh' %}我的故事 - 照片故事生成器{% else %}My Stories - Photo Story Generator{% endif %}
+    </title>
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <link rel="stylesheet" href="/static/css/custom.css">
+</head>
+<body>
+    <div class="container mt-5">
+        <!-- Language Switcher -->
+        <div class="language-switcher mb-3 text-end">
+            <div class="btn-group" role="group" aria-label="Language Selector">
+                <a href="/set-language/en" class="btn btn-sm {{ 'btn-primary' if language == 'en' else 'btn-outline-primary' }}">English</a>
+                <a href="/set-language/zh" class="btn btn-sm {{ 'btn-primary' if language == 'zh' else 'btn-outline-primary' }}">中文</a>
+            </div>
+        </div>
+        
+        <h1 class="mb-4">
+            {% if language == 'zh' %}我的生成故事{% else %}My Generated Stories{% endif %}
+        </h1>
+        
+        <div class="mb-4">
+            <a href="/" class="btn btn-primary">
+                {% if language == 'zh' %}返回首页{% else %}Back to Home{% endif %}
+            </a>
+        </div>
+        
+        {% if stories %}
+            <div class="row">
+                {% for story in stories %}
+                    <div class="col-md-6 mb-4">
+                        <div class="card h-100">
+                            <div class="card-body">
+                                <h5 class="card-title">{{ story.title or ("故事 #" if language == 'zh' else "Story #") + story.id|string }}</h5>
+                                <p class="card-text">{{ story.content[:200] }}{% if story.content|length > 200 %}...{% endif %}</p>
+                                <div class="text-muted mb-3">
+                                    {% if language == 'zh' %}创建时间{% else %}Created{% endif %}: {{ story.created_at.strftime('%Y-%m-%d %H:%M') }}
+                                </div>
+                                <a href="/stories/{{ story.id }}" class="btn btn-info">
+                                    {% if language == 'zh' %}查看完整故事{% else %}View Full Story{% endif %}
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="alert alert-info">
+                {% if language == 'zh' %}
+                    您还没有生成任何故事。返回首页创建一个吧！
+                {% else %}
+                    You haven't generated any stories yet. Go back to the home page to create one!
+                {% endif %}
+            </div>
+        {% endif %}
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
