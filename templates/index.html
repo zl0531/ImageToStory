@@ -16,11 +16,33 @@
 <body>
     <div class="container py-4">
         <header class="text-center mb-5">
-            <h1 class="mb-3">Photo Story Generator</h1>
-            <p class="lead">Upload a photo and let Google's Gemini AI create a unique story based on what it sees.</p>
+            <!-- Language Switcher -->
+            <div class="language-switcher mb-3">
+                <div class="btn-group" role="group" aria-label="Language Selector">
+                    <a href="/set-language/en" class="btn btn-sm {{ 'btn-primary' if language == 'en' else 'btn-outline-primary' }}">English</a>
+                    <a href="/set-language/zh" class="btn btn-sm {{ 'btn-primary' if language == 'zh' else 'btn-outline-primary' }}">中文</a>
+                </div>
+            </div>
+            
+            <!-- Main Title -->
+            <h1 class="mb-3">
+                {% if language == 'zh' %}照片故事生成器{% else %}Photo Story Generator{% endif %}
+            </h1>
+            
+            <!-- Description -->
+            <p class="lead">
+                {% if language == 'zh' %}
+                    上传照片，让谷歌的Gemini AI根据它看到的内容创作一个独特的故事。
+                {% else %}
+                    Upload a photo and let Google's Gemini AI create a unique story based on what it sees.
+                {% endif %}
+            </p>
+            
+            <!-- Stories Collection Link -->
             <div class="mt-3">
                 <a href="/stories" class="btn btn-outline-primary">
-                    <i class="fas fa-book me-2"></i>View Your Story Collection
+                    <i class="fas fa-book me-2"></i>
+                    {% if language == 'zh' %}查看您的故事集合{% else %}View Your Story Collection{% endif %}
                 </a>
             </div>
         </header>
@@ -30,23 +52,40 @@
             <div class="col-md-6">
                 <div class="card shadow-sm h-100">
                     <div class="card-body">
-                        <h2 class="card-title">Upload Your Photo</h2>
-                        <p class="card-text">Select an image to generate a story. Accepted formats: JPEG, PNG, GIF.</p>
+                        <h2 class="card-title">
+                            {% if language == 'zh' %}上传您的照片{% else %}Upload Your Photo{% endif %}
+                        </h2>
+                        <p class="card-text">
+                            {% if language == 'zh' %}
+                                选择一张图片生成故事。支持的格式：JPEG、PNG、GIF。
+                            {% else %}
+                                Select an image to generate a story. Accepted formats: JPEG, PNG, GIF.
+                            {% endif %}
+                        </p>
                         
                         <div id="upload-container" class="text-center p-4 border rounded mb-3">
                             <div id="dropzone" class="dropzone">
                                 <i class="fas fa-cloud-upload-alt fa-3x mb-3"></i>
-                                <p>Drag & drop your image here or click to browse</p>
+                                <p>
+                                    {% if language == 'zh' %}
+                                        拖放图片至此或点击浏览
+                                    {% else %}
+                                        Drag & drop your image here or click to browse
+                                    {% endif %}
+                                </p>
                                 <input type="file" id="file-input" accept="image/jpeg,image/png,image/gif" class="d-none">
                             </div>
                             <div id="preview-container" class="mt-3 d-none">
                                 <img id="image-preview" class="img-fluid rounded mb-3" alt="Preview">
-                                <button id="change-image" class="btn btn-sm btn-secondary">Change Image</button>
+                                <button id="change-image" class="btn btn-sm btn-secondary">
+                                    {% if language == 'zh' %}更换图片{% else %}Change Image{% endif %}
+                                </button>
                             </div>
                         </div>
                         
                         <button id="generate-btn" class="btn btn-primary w-100" disabled>
-                            <i class="fas fa-magic me-2"></i>Generate Story
+                            <i class="fas fa-magic me-2"></i>
+                            {% if language == 'zh' %}生成故事{% else %}Generate Story{% endif %}
                         </button>
                     </div>
                 </div>
@@ -56,18 +95,32 @@
             <div class="col-md-6">
                 <div class="card shadow-sm h-100">
                     <div class="card-body">
-                        <h2 class="card-title">Your Story</h2>
+                        <h2 class="card-title">
+                            {% if language == 'zh' %}您的故事{% else %}Your Story{% endif %}
+                        </h2>
                         <div id="results-container">
                             <div id="initial-message" class="text-center py-5">
                                 <i class="fas fa-book-open fa-3x mb-3 text-secondary"></i>
-                                <p class="text-secondary">Your generated story will appear here.</p>
+                                <p class="text-secondary">
+                                    {% if language == 'zh' %}
+                                        您生成的故事将显示在这里。
+                                    {% else %}
+                                        Your generated story will appear here.
+                                    {% endif %}
+                                </p>
                             </div>
                             
                             <div id="loading" class="text-center py-5 d-none">
                                 <div class="spinner-border text-primary" role="status">
                                     <span class="visually-hidden">Loading...</span>
                                 </div>
-                                <p class="mt-3">Analyzing image and crafting your story...</p>
+                                <p class="mt-3">
+                                    {% if language == 'zh' %}
+                                        正在分析图像并创作您的故事...
+                                    {% else %}
+                                        Analyzing image and crafting your story...
+                                    {% endif %}
+                                </p>
                             </div>
                             
                             <div id="story-container" class="d-none">
@@ -75,16 +128,20 @@
                                 
                                 <div class="d-flex flex-wrap gap-2 mb-4">
                                     <button id="regenerate-btn" class="btn btn-outline-primary">
-                                        <i class="fas fa-sync-alt me-2"></i>Regenerate
+                                        <i class="fas fa-sync-alt me-2"></i>
+                                        {% if language == 'zh' %}重新生成{% else %}Regenerate{% endif %}
                                     </button>
                                     <button id="narrate-btn" class="btn btn-outline-info">
-                                        <i class="fas fa-volume-up me-2"></i>Narrate
+                                        <i class="fas fa-volume-up me-2"></i>
+                                        {% if language == 'zh' %}朗读{% else %}Narrate{% endif %}
                                     </button>
                                     <button id="download-btn" class="btn btn-outline-success">
-                                        <i class="fas fa-download me-2"></i>Download
+                                        <i class="fas fa-download me-2"></i>
+                                        {% if language == 'zh' %}下载{% else %}Download{% endif %}
                                     </button>
                                     <button id="copy-btn" class="btn btn-outline-secondary">
-                                        <i class="fas fa-copy me-2"></i>Copy
+                                        <i class="fas fa-copy me-2"></i>
+                                        {% if language == 'zh' %}复制{% else %}Copy{% endif %}
                                     </button>
                                 </div>
                                 
@@ -92,14 +149,27 @@
                                 <div id="audio-container" class="d-none mb-4">
                                     <div class="card">
                                         <div class="card-body">
-                                            <h5 class="card-title">Story Narration</h5>
+                                            <h5 class="card-title">
+                                                {% if language == 'zh' %}故事朗读{% else %}Story Narration{% endif %}
+                                            </h5>
                                             <audio id="audio-player" controls class="w-100">
-                                                Your browser does not support the audio element.
+                                                {% if language == 'zh' %}
+                                                    您的浏览器不支持音频元素。
+                                                {% else %}
+                                                    Your browser does not support the audio element.
+                                                {% endif %}
                                             </audio>
                                             <div class="d-flex justify-content-between mt-2">
-                                                <small class="text-secondary">Listen to the story narration</small>
+                                                <small class="text-secondary">
+                                                    {% if language == 'zh' %}
+                                                        收听故事朗读
+                                                    {% else %}
+                                                        Listen to the story narration
+                                                    {% endif %}
+                                                </small>
                                                 <button id="download-audio-btn" class="btn btn-sm btn-outline-secondary">
-                                                    <i class="fas fa-download me-1"></i>Save Audio
+                                                    <i class="fas fa-download me-1"></i>
+                                                    {% if language == 'zh' %}保存音频{% else %}Save Audio{% endif %}
                                                 </button>
                                             </div>
                                         </div>
@@ -110,7 +180,7 @@
                                     <div class="accordion-item">
                                         <h2 class="accordion-header">
                                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#imageAnalysis">
-                                                View Image Analysis
+                                                {% if language == 'zh' %}查看图像分析{% else %}View Image Analysis{% endif %}
                                             </button>
                                         </h2>
                                         <div id="imageAnalysis" class="accordion-collapse collapse" data-bs-parent="#storyAccordion">
@@ -122,15 +192,22 @@
                                     <div class="accordion-item">
                                         <h2 class="accordion-header">
                                             <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#customPrompt">
-                                                Customize Regeneration
+                                                {% if language == 'zh' %}自定义重新生成{% else %}Customize Regeneration{% endif %}
                                             </button>
                                         </h2>
                                         <div id="customPrompt" class="accordion-collapse collapse" data-bs-parent="#storyAccordion">
                                             <div class="accordion-body">
-                                                <label for="prompt-input" class="form-label">Add custom instructions for regeneration:</label>
-                                                <textarea id="prompt-input" class="form-control mb-3" rows="3" placeholder="E.g., 'Make it a sci-fi story' or 'Set it in the 1920s'"></textarea>
+                                                <label for="prompt-input" class="form-label">
+                                                    {% if language == 'zh' %}
+                                                        添加用于重新生成的自定义指令：
+                                                    {% else %}
+                                                        Add custom instructions for regeneration:
+                                                    {% endif %}
+                                                </label>
+                                                <textarea id="prompt-input" class="form-control mb-3" rows="3" placeholder="{% if language == 'zh' %}例如，'让故事是科幻风格的' 或 '设定在1920年代'{% else %}E.g., 'Make it a sci-fi story' or 'Set it in the 1920s'{% endif %}"></textarea>
                                                 <button id="custom-regenerate-btn" class="btn btn-primary">
-                                                    <i class="fas fa-wand-magic-sparkles me-2"></i>Generate with Custom Prompt
+                                                    <i class="fas fa-wand-magic-sparkles me-2"></i>
+                                                    {% if language == 'zh' %}使用自定义提示生成{% else %}Generate with Custom Prompt{% endif %}
                                                 </button>
                                             </div>
                                         </div>
@@ -149,7 +226,13 @@
         </div>
         
         <footer class="mt-5 text-center text-secondary">
-            <p>Upload a photo and generate creative stories powered by Google's Gemini AI.</p>
+            <p>
+                {% if language == 'zh' %}
+                    上传照片，使用谷歌Gemini人工智能生成创意故事。
+                {% else %}
+                    Upload a photo and generate creative stories powered by Google's Gemini AI.
+                {% endif %}
+            </p>
         </footer>
     </div>
 
