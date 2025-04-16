@@ -1,6 +1,6 @@
 import os
 import logging
-from flask import Flask, render_template, request, jsonify, session, send_from_directory
+from flask import Flask, render_template, request, jsonify, session, send_from_directory, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase
 from services.ai_service import analyze_image_and_generate_story, regenerate_story
@@ -42,14 +42,26 @@ db.init_app(app)
 @app.route('/')
 def index():
     """Render the main page of the application."""
-    return render_template('index.html')
+    # Get the preferred language from the session or default to English
+    language = session.get('language', 'en')
+    return render_template('index.html', language=language)
+
+@app.route('/set-language/<lang>')
+def set_language(lang):
+    """Set the user's preferred language."""
+    # Only accept valid language codes
+    if lang in ['en', 'zh']:
+        session['language'] = lang
+    return redirect(request.referrer or url_for('index'))
 
 @app.route('/stories')
 def list_stories():
     """Display a list of all stored stories."""
     from services.db_service import get_all_stories
     stories = get_all_stories()
-    return render_template('stories.html', stories=stories)
+    # Get the preferred language from the session or default to English
+    language = session.get('language', 'en')
+    return render_template('stories.html', stories=stories, language=language)
 
 @app.route('/stories/<int:story_id>')
 def view_story(story_id):
@@ -58,7 +70,9 @@ def view_story(story_id):
     story = get_story_by_id(story_id)
     if not story:
         return render_template('error.html', error="Story not found"), 404
-    return render_template('view_story.html', story=story)
+    # Get the preferred language from the session or default to English
+    language = session.get('language', 'en')
+    return render_template('view_story.html', story=story, language=language)
 
 @app.route('/upload', methods=['POST'])
 def upload():
@@ -83,8 +97,11 @@ def upload():
         # Store base64 image in session for potential regeneration
         session['base64_image'] = base64_image
         
-        # Generate a story based on the image
-        image_analysis, story = analyze_image_and_generate_story(base64_image)
+        # Get the preferred language from the session
+        language = session.get('language', 'en')
+        
+        # Generate a story based on the image and language
+        image_analysis, story = analyze_image_and_generate_story(base64_image, language=language)
         
         # Save the story to the database
         from services.db_service import save_story
@@ -122,8 +139,11 @@ def regenerate():
         
         base64_image = session['base64_image']
         
-        # Regenerate story
-        story = regenerate_story(base64_image, custom_prompt)
+        # Get the preferred language from the session
+        language = session.get('language', 'en')
+        
+        # Regenerate story with language preference
+        story = regenerate_story(base64_image, custom_prompt, language=language)
         
         # Save the regenerated story to the database
         from services.db_service import save_story
@@ -154,8 +174,14 @@ def text_to_speech():
         if not text:
             return jsonify({'success': False, 'error': 'No text provided'}), 400
         
-        # Generate speech
-        audio_path = generate_speech(text)
+        # Get the preferred language from the session
+        language = session.get('language', 'en')
+        
+        # Map our language codes to gTTS language codes
+        tts_lang = 'zh-CN' if language == 'zh' else 'en'
+        
+        # Generate speech with proper language
+        audio_path = generate_speech(text, lang=tts_lang)
         
         # If we have a story ID, update the story with the audio path
         if story_id:
