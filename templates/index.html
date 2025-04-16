@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Story Generator</title>
+    <!-- Bootstrap CSS (Replit theme) -->
+    <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+</head>
+<body>
+    <div class="container py-4">
+        <header class="text-center mb-5">
+            <h1 class="mb-3">Photo Story Generator</h1>
+            <p class="lead">Upload a photo and let Google's Gemini AI create a unique story based on what it sees.</p>
+        </header>
+
+        <div class="row g-4">
+            <!-- Upload Section -->
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h2 class="card-title">Upload Your Photo</h2>
+                        <p class="card-text">Select an image to generate a story. Accepted formats: JPEG, PNG, GIF.</p>
+                        
+                        <div id="upload-container" class="text-center p-4 border rounded mb-3">
+                            <div id="dropzone" class="dropzone">
+                                <i class="fas fa-cloud-upload-alt fa-3x mb-3"></i>
+                                <p>Drag & drop your image here or click to browse</p>
+                                <input type="file" id="file-input" accept="image/jpeg,image/png,image/gif" class="d-none">
+                            </div>
+                            <div id="preview-container" class="mt-3 d-none">
+                                <img id="image-preview" class="img-fluid rounded mb-3" alt="Preview">
+                                <button id="change-image" class="btn btn-sm btn-secondary">Change Image</button>
+                            </div>
+                        </div>
+                        
+                        <button id="generate-btn" class="btn btn-primary w-100" disabled>
+                            <i class="fas fa-magic me-2"></i>Generate Story
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Results Section -->
+            <div class="col-md-6">
+                <div class="card shadow-sm h-100">
+                    <div class="card-body">
+                        <h2 class="card-title">Your Story</h2>
+                        <div id="results-container">
+                            <div id="initial-message" class="text-center py-5">
+                                <i class="fas fa-book-open fa-3x mb-3 text-secondary"></i>
+                                <p class="text-secondary">Your generated story will appear here.</p>
+                            </div>
+                            
+                            <div id="loading" class="text-center py-5 d-none">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Loading...</span>
+                                </div>
+                                <p class="mt-3">Analyzing image and crafting your story...</p>
+                            </div>
+                            
+                            <div id="story-container" class="d-none">
+                                <div id="story-content" class="mb-4"></div>
+                                
+                                <div class="d-flex flex-wrap gap-2 mb-4">
+                                    <button id="regenerate-btn" class="btn btn-outline-primary">
+                                        <i class="fas fa-sync-alt me-2"></i>Regenerate
+                                    </button>
+                                    <button id="download-btn" class="btn btn-outline-success">
+                                        <i class="fas fa-download me-2"></i>Download
+                                    </button>
+                                    <button id="copy-btn" class="btn btn-outline-secondary">
+                                        <i class="fas fa-copy me-2"></i>Copy
+                                    </button>
+                                </div>
+                                
+                                <div class="accordion" id="storyAccordion">
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#imageAnalysis">
+                                                View Image Analysis
+                                            </button>
+                                        </h2>
+                                        <div id="imageAnalysis" class="accordion-collapse collapse" data-bs-parent="#storyAccordion">
+                                            <div class="accordion-body">
+                                                <div id="analysis-content" class="small"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#customPrompt">
+                                                Customize Regeneration
+                                            </button>
+                                        </h2>
+                                        <div id="customPrompt" class="accordion-collapse collapse" data-bs-parent="#storyAccordion">
+                                            <div class="accordion-body">
+                                                <label for="prompt-input" class="form-label">Add custom instructions for regeneration:</label>
+                                                <textarea id="prompt-input" class="form-control mb-3" rows="3" placeholder="E.g., 'Make it a sci-fi story' or 'Set it in the 1920s'"></textarea>
+                                                <button id="custom-regenerate-btn" class="btn btn-primary">
+                                                    <i class="fas fa-wand-magic-sparkles me-2"></i>Generate with Custom Prompt
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div id="error-container" class="alert alert-danger d-none" role="alert">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                <span id="error-message"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <footer class="mt-5 text-center text-secondary">
+            <p>Upload a photo and generate creative stories powered by Google's Gemini AI.</p>
+        </footer>
+    </div>
+
+    <!-- Bootstrap JS Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>

@@ -1,0 +1,59 @@
+/* Custom styles for the Story Generator application */
+
+/* Dropzone styles */
+.dropzone {
+    border: 2px dashed var(--bs-border-color);
+    border-radius: 5px;
+    padding: 2rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.dropzone:hover, .dropzone.dragover {
+    border-color: var(--bs-primary);
+    background-color: rgba(var(--bs-primary-rgb), 0.1);
+}
+
+/* Image preview container */
+#image-preview {
+    max-height: 300px;
+    width: auto;
+    margin: 0 auto;
+    display: block;
+}
+
+/* Story content formatting */
+#story-content {
+    white-space: pre-line;
+    line-height: 1.6;
+}
+
+/* Analysis content */
+#analysis-content {
+    white-space: pre-line;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Loading animation enhancement */
+@keyframes pulse {
+    0% { opacity: 0.6; }
+    50% { opacity: 1; }
+    100% { opacity: 0.6; }
+}
+
+#loading p {
+    animation: pulse 1.5s infinite;
+}
+
+/* Better spacing for mobile */
+@media (max-width: 768px) {
+    .card {
+        margin-bottom: 1rem;
+    }
+    
+    #story-container .btn {
+        margin-bottom: 0.5rem;
+    }
+}
