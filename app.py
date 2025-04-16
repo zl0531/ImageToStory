@@ -44,6 +44,22 @@ def index():
     """Render the main page of the application."""
     return render_template('index.html')
 
+@app.route('/stories')
+def list_stories():
+    """Display a list of all stored stories."""
+    from services.db_service import get_all_stories
+    stories = get_all_stories()
+    return render_template('stories.html', stories=stories)
+
+@app.route('/stories/<int:story_id>')
+def view_story(story_id):
+    """Display a single story."""
+    from services.db_service import get_story_by_id
+    story = get_story_by_id(story_id)
+    if not story:
+        return render_template('error.html', error="Story not found"), 404
+    return render_template('view_story.html', story=story)
+
 @app.route('/upload', methods=['POST'])
 def upload():
     """Handle image upload and story generation."""
