@@ -1,0 +1,9 @@
+flask
+flask-login
+flask-sqlalchemy
+google-generativeai
+gtts
+gunicorn
+email-validator
+pillow
+psycopg2-binary
