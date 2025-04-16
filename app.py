@@ -1,8 +1,9 @@
 import os
 import logging
-from flask import Flask, render_template, request, jsonify, session
+from flask import Flask, render_template, request, jsonify, session, send_from_directory
 from services.ai_service import analyze_image_and_generate_story, regenerate_story
 from services.image_service import process_image, validate_image
+from services.tts_service import generate_speech
 from utils.file_utils import save_temp_file, remove_temp_file
 import base64
 
@@ -88,6 +89,34 @@ def regenerate():
     except Exception as e:
         logger.exception("Error regenerating story")
         return jsonify({'success': False, 'error': str(e)}), 500
+
+@app.route('/generate-speech', methods=['POST'])
+def text_to_speech():
+    """Generate speech from text."""
+    try:
+        # Get data from request
+        data = request.json
+        text = data.get('text', '')
+        
+        if not text:
+            return jsonify({'success': False, 'error': 'No text provided'}), 400
+        
+        # Generate speech
+        audio_path = generate_speech(text)
+        
+        return jsonify({
+            'success': True,
+            'audioPath': audio_path
+        })
+    
+    except Exception as e:
+        logger.exception("Error generating speech")
+        return jsonify({'success': False, 'error': str(e)}), 500
+        
+@app.route('/static/audio/<filename>')
+def serve_audio(filename):
+    """Serve audio files."""
+    return send_from_directory('static/audio', filename)
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=True)

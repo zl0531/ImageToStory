@@ -13,4 +13,5 @@ dependencies = [
     "pillow>=11.2.1",
     "psycopg2-binary>=2.9.10",
     "google-generativeai>=0.8.4",
+    "gtts>=2.5.4",
 ]

@@ -70,12 +70,33 @@
                                     <button id="regenerate-btn" class="btn btn-outline-primary">
                                         <i class="fas fa-sync-alt me-2"></i>Regenerate
                                     </button>
+                                    <button id="narrate-btn" class="btn btn-outline-info">
+                                        <i class="fas fa-volume-up me-2"></i>Narrate
+                                    </button>
                                     <button id="download-btn" class="btn btn-outline-success">
                                         <i class="fas fa-download me-2"></i>Download
                                     </button>
                                     <button id="copy-btn" class="btn btn-outline-secondary">
                                         <i class="fas fa-copy me-2"></i>Copy
                                     </button>
+                                </div>
+                                
+                                <!-- Audio Player (hidden initially) -->
+                                <div id="audio-container" class="d-none mb-4">
+                                    <div class="card">
+                                        <div class="card-body">
+                                            <h5 class="card-title">Story Narration</h5>
+                                            <audio id="audio-player" controls class="w-100">
+                                                Your browser does not support the audio element.
+                                            </audio>
+                                            <div class="d-flex justify-content-between mt-2">
+                                                <small class="text-secondary">Listen to the story narration</small>
+                                                <button id="download-audio-btn" class="btn btn-sm btn-outline-secondary">
+                                                    <i class="fas fa-download me-1"></i>Save Audio
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
                                 
                                 <div class="accordion" id="storyAccordion">

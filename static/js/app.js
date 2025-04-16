@@ -21,11 +21,19 @@ document.addEventListener('DOMContentLoaded', function() {
     const downloadBtn = document.getElementById('download-btn');
     const copyBtn = document.getElementById('copy-btn');
     
+    // Audio elements
+    const narrateBtn = document.getElementById('narrate-btn');
+    const audioContainer = document.getElementById('audio-container');
+    const audioPlayer = document.getElementById('audio-player');
+    const downloadAudioBtn = document.getElementById('download-audio-btn');
+    
     // Current file to upload
     let currentFile = null;
     // Current story and analysis text
     let currentStory = '';
     let currentAnalysis = '';
+    // Current audio URL
+    let currentAudioUrl = '';
     
     // ===== File handling =====
     
@@ -233,9 +241,17 @@ document.addEventListener('DOMContentLoaded', function() {
         initialMessage.classList.remove('d-none');
         storyContainer.classList.add('d-none');
         errorContainer.classList.add('d-none');
+        audioContainer.classList.add('d-none');
         
         // Clear custom prompt
         promptInput.value = '';
+        
+        // Reset audio
+        if (audioPlayer) {
+            audioPlayer.pause();
+            audioPlayer.src = '';
+        }
+        currentAudioUrl = '';
     }
     
     // ===== Download and Copy Functions =====
@@ -278,5 +294,70 @@ document.addEventListener('DOMContentLoaded', function() {
                 showError('Failed to copy text to clipboard');
             }
         );
+    });
+    
+    // ===== Text-to-Speech Functions =====
+    
+    // Generate speech from the current story
+    narrateBtn.addEventListener('click', function() {
+        if (!currentStory) return;
+        
+        // Show loading state
+        const originalText = narrateBtn.innerHTML;
+        narrateBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Generating...';
+        narrateBtn.disabled = true;
+        
+        // Hide audio player while generating
+        audioContainer.classList.add('d-none');
+        
+        // Send request to server
+        fetch('/generate-speech', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                text: currentStory
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            narrateBtn.innerHTML = originalText;
+            narrateBtn.disabled = false;
+            
+            if (data.success) {
+                // Set audio source and show player
+                currentAudioUrl = `/static/${data.audioPath}`;
+                audioPlayer.src = currentAudioUrl;
+                audioContainer.classList.remove('d-none');
+                
+                // Play the audio
+                audioPlayer.play();
+            } else {
+                showError(data.error || 'An error occurred while generating speech');
+            }
+        })
+        .catch(error => {
+            narrateBtn.innerHTML = originalText;
+            narrateBtn.disabled = false;
+            showError('Network error. Please try again later.');
+            console.error('Error:', error);
+        });
+    });
+    
+    // Download the generated audio
+    downloadAudioBtn.addEventListener('click', function() {
+        if (!currentAudioUrl) return;
+        
+        const a = document.createElement('a');
+        a.href = currentAudioUrl;
+        a.download = 'story-narration.mp3';
+        document.body.appendChild(a);
+        a.click();
+        
+        // Cleanup
+        setTimeout(() => {
+            document.body.removeChild(a);
+        }, 100);
     });
 });
