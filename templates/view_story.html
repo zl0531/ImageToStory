@@ -1,30 +1,42 @@
 <!DOCTYPE html>
-<html lang="en" data-bs-theme="dark">
+<html lang="{{ language }}" data-bs-theme="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{{ story.title or "Story #" + story.id|string }} - Photo Story Generator</title>
+    <title>{{ story.title or ("故事 #" if language == 'zh' else "Story #") + story.id|string }} - {% if language == 'zh' %}照片故事生成器{% else %}Photo Story Generator{% endif %}</title>
     <link rel="stylesheet" href="https://cdn.replit.com/agent/bootstrap-agent-dark-theme.min.css">
     <link rel="stylesheet" href="/static/css/custom.css">
 </head>
 <body>
     <div class="container mt-5">
+        <!-- Language Switcher -->
+        <div class="language-switcher mb-3 text-end">
+            <div class="btn-group" role="group" aria-label="Language Selector">
+                <a href="/set-language/en" class="btn btn-sm {{ 'btn-primary' if language == 'en' else 'btn-outline-primary' }}">English</a>
+                <a href="/set-language/zh" class="btn btn-sm {{ 'btn-primary' if language == 'zh' else 'btn-outline-primary' }}">中文</a>
+            </div>
+        </div>
+        
         <div class="mb-4">
-            <a href="/stories" class="btn btn-primary">Back to Stories</a>
-            <a href="/" class="btn btn-outline-primary ms-2">Home</a>
+            <a href="/stories" class="btn btn-primary">
+                {% if language == 'zh' %}返回故事列表{% else %}Back to Stories{% endif %}
+            </a>
+            <a href="/" class="btn btn-outline-primary ms-2">
+                {% if language == 'zh' %}首页{% else %}Home{% endif %}
+            </a>
         </div>
         
         <div class="card mb-5">
             <div class="card-header">
-                <h1>{{ story.title or "Story #" + story.id|string }}</h1>
+                <h1>{{ story.title or ("故事 #" if language == 'zh' else "Story #") + story.id|string }}</h1>
                 <p class="text-muted">
-                    Created on {{ story.created_at.strftime('%Y-%m-%d %H:%M') }}
+                    {% if language == 'zh' %}创建于{% else %}Created on{% endif %} {{ story.created_at.strftime('%Y-%m-%d %H:%M') }}
                 </p>
             </div>
             <div class="card-body">
                 {% if story.image_analysis %}
                 <div class="mb-4">
-                    <h4>Image Analysis</h4>
+                    <h4>{% if language == 'zh' %}图像分析{% else %}Image Analysis{% endif %}</h4>
                     <div class="card bg-dark mb-3">
                         <div class="card-body">
                             <p>{{ story.image_analysis|replace('\n', '<br>')|safe }}</p>
@@ -34,7 +46,7 @@
                 {% endif %}
                 
                 <div class="mb-4">
-                    <h4>Story</h4>
+                    <h4>{% if language == 'zh' %}故事{% else %}Story{% endif %}</h4>
                     <div class="story-content">
                         {{ story.content|replace('\n', '<br>')|safe }}
                     </div>
@@ -42,30 +54,38 @@
                 
                 {% if story.audio_path %}
                 <div class="mt-4">
-                    <h4>Audio Narration</h4>
+                    <h4>{% if language == 'zh' %}语音朗读{% else %}Audio Narration{% endif %}</h4>
                     <audio controls class="w-100">
                         <source src="/{{ story.audio_path }}" type="audio/mpeg">
-                        Your browser does not support the audio element.
+                        {% if language == 'zh' %}
+                            您的浏览器不支持音频元素。
+                        {% else %}
+                            Your browser does not support the audio element.
+                        {% endif %}
                     </audio>
                     <div class="mt-2">
                         <a href="/{{ story.audio_path }}" download class="btn btn-sm btn-secondary">
-                            Download Audio
+                            {% if language == 'zh' %}下载音频{% else %}Download Audio{% endif %}
                         </a>
                     </div>
                 </div>
                 {% else %}
                 <div class="mt-4">
                     <button id="generateAudio" class="btn btn-primary" data-story-id="{{ story.id }}">
-                        Generate Audio Narration
+                        {% if language == 'zh' %}生成语音朗读{% else %}Generate Audio Narration{% endif %}
                     </button>
                     <div id="audioContainer" class="mt-3 d-none">
                         <audio id="audioPlayer" controls class="w-100">
                             <source id="audioSource" src="" type="audio/mpeg">
-                            Your browser does not support the audio element.
+                            {% if language == 'zh' %}
+                                您的浏览器不支持音频元素。
+                            {% else %}
+                                Your browser does not support the audio element.
+                            {% endif %}
                         </audio>
                         <div class="mt-2">
                             <a id="downloadLink" href="" download class="btn btn-sm btn-secondary">
-                                Download Audio
+                                {% if language == 'zh' %}下载音频{% else %}Download Audio{% endif %}
                             </a>
                         </div>
                     </div>
@@ -85,7 +105,11 @@
                     const storyContent = document.querySelector('.story-content').innerText;
                     
                     generateButton.disabled = true;
+                    {% if language == 'zh' %}
+                    generateButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> 正在生成...';
+                    {% else %}
                     generateButton.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Generating...';
+                    {% endif %}
                     
                     fetch('/generate-speech', {
                         method: 'POST',
@@ -106,16 +130,24 @@
                             document.getElementById('audioPlayer').load();
                             generateButton.classList.add('d-none');
                         } else {
+                            {% if language == 'zh' %}
+                            alert('生成音频时出错: ' + data.error);
+                            {% else %}
                             alert('Error generating audio: ' + data.error);
+                            {% endif %}
                             generateButton.disabled = false;
-                            generateButton.textContent = 'Generate Audio Narration';
+                            generateButton.textContent = '{% if language == 'zh' %}生成语音朗读{% else %}Generate Audio Narration{% endif %}';
                         }
                     })
                     .catch(error => {
                         console.error('Error:', error);
+                        {% if language == 'zh' %}
+                        alert('生成音频时发生错误。');
+                        {% else %}
                         alert('An error occurred while generating the audio.');
+                        {% endif %}
                         generateButton.disabled = false;
-                        generateButton.textContent = 'Generate Audio Narration';
+                        generateButton.textContent = '{% if language == 'zh' %}生成语音朗读{% else %}Generate Audio Narration{% endif %}';
                     });
                 });
             }
