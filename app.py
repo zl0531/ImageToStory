@@ -1,6 +1,8 @@
 import os
 import logging
 from flask import Flask, render_template, request, jsonify, session, send_from_directory
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy.orm import DeclarativeBase
 from services.ai_service import analyze_image_and_generate_story, regenerate_story
 from services.image_service import process_image, validate_image
 from services.tts_service import generate_speech
@@ -15,9 +17,27 @@ logger = logging.getLogger(__name__)
 if not os.environ.get("GOOGLE_API_KEY"):
     logger.warning("GOOGLE_API_KEY environment variable is not set. The application may not function correctly.")
 
+# Create the database base class
+class Base(DeclarativeBase):
+    pass
+
+# Initialize the database
+db = SQLAlchemy(model_class=Base)
+
 # Create the app
 app = Flask(__name__)
 app.secret_key = os.environ.get("SESSION_SECRET")
+
+# Configure the database
+app.config["SQLALCHEMY_DATABASE_URI"] = os.environ.get("DATABASE_URL")
+app.config["SQLALCHEMY_ENGINE_OPTIONS"] = {
+    "pool_recycle": 300,
+    "pool_pre_ping": True,
+}
+app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+
+# Initialize the app with the database extension
+db.init_app(app)
 
 @app.route('/')
 def index():
@@ -50,6 +70,13 @@ def upload():
         # Generate a story based on the image
         image_analysis, story = analyze_image_and_generate_story(base64_image)
         
+        # Save the story to the database
+        from services.db_service import save_story
+        saved_story = save_story(content=story, image_analysis=image_analysis)
+        
+        # Store the story ID in the session for later use
+        session['current_story_id'] = saved_story.id
+        
         # Clean up the temporary file
         remove_temp_file(temp_path)
         
@@ -57,6 +84,7 @@ def upload():
             'success': True, 
             'imageAnalysis': image_analysis,
             'story': story,
+            'storyId': saved_story.id,
             'imageData': f"data:image/jpeg;base64,{base64_image}"
         })
     
@@ -81,9 +109,17 @@ def regenerate():
         # Regenerate story
         story = regenerate_story(base64_image, custom_prompt)
         
+        # Save the regenerated story to the database
+        from services.db_service import save_story
+        saved_story = save_story(content=story, prompt=custom_prompt)
+        
+        # Update the story ID in the session
+        session['current_story_id'] = saved_story.id
+        
         return jsonify({
             'success': True,
-            'story': story
+            'story': story,
+            'storyId': saved_story.id
         })
     
     except Exception as e:
@@ -97,6 +133,7 @@ def text_to_speech():
         # Get data from request
         data = request.json
         text = data.get('text', '')
+        story_id = data.get('storyId') or session.get('current_story_id')
         
         if not text:
             return jsonify({'success': False, 'error': 'No text provided'}), 400
@@ -104,9 +141,15 @@ def text_to_speech():
         # Generate speech
         audio_path = generate_speech(text)
         
+        # If we have a story ID, update the story with the audio path
+        if story_id:
+            from services.db_service import update_story_audio
+            update_story_audio(story_id, audio_path)
+        
         return jsonify({
             'success': True,
-            'audioPath': audio_path
+            'audioPath': audio_path,
+            'storyId': story_id
         })
     
     except Exception as e:
