@@ -7,7 +7,7 @@ from sqlalchemy.orm import DeclarativeBase
 from services.ai_service import analyze_image_and_generate_story, regenerate_story
 from services.image_service import process_image, validate_image
 from services.tts_service import generate_speech
-from utils.file_utils import save_temp_file, remove_temp_file
+from utils.file_utils import save_temp_file, remove_temp_file, save_base64_image, get_base64_image
 import base64
 
 # Configure logging
@@ -104,13 +104,18 @@ def upload():
         try:
             base64_image = process_image(temp_path)
             logger.info("Image successfully processed and converted to base64")
+
+            # Save the base64 image to a file instead of session
+            logger.info("Saving base64 image to file")
+            image_id, image_path = save_base64_image(base64_image)
+            logger.info(f"Image saved with ID: {image_id}")
+
+            # Store only the image ID in session
+            session['image_id'] = image_id
+            logger.info("Image ID stored in session")
         except Exception as img_error:
             logger.error(f"Error processing image: {str(img_error)}", exc_info=True)
             return jsonify({'success': False, 'error': f"Error processing image: {str(img_error)}"}), 500
-
-        # Store base64 image in session for potential regeneration
-        logger.info("Storing image in session")
-        session['base64_image'] = base64_image
 
         # Get the preferred language from the session
         language = session.get('language', 'en')
@@ -170,11 +175,23 @@ def regenerate():
         data = request.json
         custom_prompt = data.get('prompt', '')
 
-        # Check if we have an image in the session
-        if 'base64_image' not in session:
+        # Check if we have an image ID in the session
+        if 'image_id' not in session:
+            logger.warning("No image ID found in session")
             return jsonify({'success': False, 'error': 'No image found. Please upload an image first.'}), 400
 
-        base64_image = session['base64_image']
+        # Get the image ID from session
+        image_id = session['image_id']
+        logger.info(f"Retrieved image ID from session: {image_id}")
+
+        # Get the base64 image from file
+        try:
+            logger.info(f"Loading image with ID: {image_id}")
+            base64_image = get_base64_image(image_id)
+            logger.info("Successfully loaded image from file")
+        except Exception as img_error:
+            logger.error(f"Error loading image: {str(img_error)}", exc_info=True)
+            return jsonify({'success': False, 'error': f"Error loading image: {str(img_error)}"}), 500
 
         # Get the preferred language from the session
         language = session.get('language', 'en')
